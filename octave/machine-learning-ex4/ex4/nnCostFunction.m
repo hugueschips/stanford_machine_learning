@@ -29,6 +29,8 @@ m = size(X, 1);
 J = 0;
 Theta1_grad = zeros(size(Theta1));
 Theta2_grad = zeros(size(Theta2));
+% size(Theta1_grad)
+% size(Theta2_grad)
 
 % ====================== YOUR CODE HERE ======================
 % Instructions: You should complete the code by working through the
@@ -77,40 +79,53 @@ J = 1/m * sum(c(:));
 
 % Compute regularization
 L = lambda/(2*m) * (
-    sum(Theta1(:, 2:input_layer_size+1)(:).^2) +
-    sum(Theta2(:, 2:hidden_layer_size+1)(:).^2)
+    sum(Theta1(:, 2:end)(:).^2) +
+    sum(Theta2(:, 2:end)(:).^2)
 );
 
 %Compute cost
 J = J+L;
 
 % Backpropagation
+Delta_1 = zeros(size(Theta1));
+Delta_2 = zeros(size(Theta2));
 for i = 1:m
   % Step 1
   a_1 = X(i, :);
   z_2 = Theta1 * a_1';
-  z_2 = [1; z_2];
+  % z_2 = [1; z_2];
   a_2 = sigmoid(z_2);
+  a_2 = [1; a_2];
   z_3 = Theta2 * a_2;
   a_3 = sigmoid(z_3);
 
   % Step 2
-  yi = zeros(num_labels, 1);
-  yi(y(i), 1) = 1;
+  yi = y(i) == [1:num_labels]';
+  % yi = zeros(num_labels, 1);
+  % yi(y(i), 1) = 1;
   delta_3 = a_3 .- yi;
 
   % Step 3
-  delta_2 = Theta2' * delta_3 .* sigmoidGradient(z_2);
+  % size(Theta2)
+  % size(delta_3)
+  % size(z_2)
+  delta_2 = Theta2' * delta_3 .* a_2 .* (1-a_2);
+  delta_2 = delta_2(2:end, 1);
 
   % Step 4
-  size(delta_3)
-  size(a_2')
-  Delta_2 = delta_3 * a_2';
+  % size(delta_3)
+   % size(delta_2)
+   % size(a_1)
+   % size(Delta_1)
+  Delta_1 = Delta_1 + delta_2 * a_1;
+  Delta_2 = Delta_2 + delta_3 * a_2';
 end
 
+Theta1_grad = 1/m * Delta_1;
+Theta1_grad(:, 2:end) = Theta1_grad(:, 2:end) + lambda/m .* Theta1(:, 2:end);
 
-
-
+Theta2_grad = 1/m * Delta_2;
+Theta2_grad(:, 2:end) = Theta2_grad(:, 2:end) + lambda/m .* Theta2(:, 2:end);
 
 
 
